@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Add Event</title>
+    <script>
+        // Check if the user is logged in by looking for a token in localStorage
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+            // Redirect to login page if no token is found
+            window.location.href = "login.html";
+        }
+    </script>
+    <script>
+        const mytoken = localStorage.getItem("token");
+        async function submitEvent(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+
+            const title = document.getElementById('title').value;
+            const eventDate = document.getElementById('event_date').value;
+            const eventTime = document.getElementById('event_time').value;
+            const location = document.getElementById('location').value;
+            const description = document.getElementById('description').value;
+
+            const data = {
+                title,
+                event_date: eventDate,
+                event_time: eventTime,
+                location,
+                description,
+            };
+
+            try {
+                const response = await fetch('http://localhost:8000/api/storeEvent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Uncomment the following line if you need authorization
+                        'Authorization': 'Bearer ${mytoken}',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Event created successfully:\n' + JSON.stringify(result));
+                } else {
+                    alert('Error creating event:\n' + JSON.stringify(result));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please check the console for details.');
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-black text-white py-4 relative">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+           <a href = "/SUPAIDOLADMIN/Dashboard.html"> <img style="width: 40px; height: 40px;" src="https://www.spc.edu.ph/wp-content/uploads/2023/05/spc-logo-footer-1.png"></a>
+            <nav class="space-x-4 ml-auto">
+                <a href="#" class="text-white hover:underline">View Event</a>
+                <a href="#" class="text-white hover:underline">Add Events</a>
+                <a href="#" class="text-white hover:underline">Feedback</a>
+            </nav>
+            <div class="relative ml-4">
+                <button id="dropdownButton" class="focus:outline-none">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+                        <span class="text-blue-600 font-bold">⚙️</span>
+                    </div>
+                </button>
+                <!-- Dropdown menu with logout button -->
+                <div id="dropdown" class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-10 hidden">
+                    <button id="activityLogButton" class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200">Activity Log</button>
+                    <button id="logoutButton" class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-8 px-4">
+        <div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-center mb-6">Create Event</h2>
+    <form onsubmit="submitEvent(event)">
+        <div class="mb-4">
+        <label for="title" class="block text-sm font-medium text-gray-700">Event Name:</label>
+        <input type="text" id="title" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+       </div>
+
+       <div class="mb-4">
+        <label for="event_date" class="block text-sm font-medium text-gray-700">Event Date:</label>
+        <input type="date" id="event_date" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+       </div>
+
+        <div class="mb-4">
+        <label for="event_time" class="block text-sm font-medium text-gray-700">Event Time:</label>
+        <input type="time" id="event_time" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+        </div>
+
+        <div class="mb-4">
+        <label for="location" class="block text-sm font-medium text-gray-700">Venue:</label>
+        <input type="text" id="location" class="mt-1 block w-full border border-gray-300 rounded-md p-2" >
+        </div>    
+
+        <div class="mb-4">
+        <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+        <textarea id="description" class="mt-1 block w-full border border-gray-300 rounded-md p-2" ></textarea>
+        </div>    
+        
+        <div class="text-center">
+        <button type="submit" class="bg-black text-white px-4 py-2 rounded-md" >Create Event</button>
+        </div> 
+    </form>
+</main>
+<script>
+     // Script for Dropdown / Logout API
+    // Toggle Dropdown Menu visibility
+    const dropdownButton = document.getElementById("dropdownButton");
+    const dropdown = document.getElementById("dropdown");
+
+    dropdownButton.addEventListener("click", function() {
+        // Toggle visibility of the dropdown menu
+        dropdown.classList.toggle("hidden");
+    });
+
+    // Logout functionality
+    const logoutButton = document.getElementById("logoutButton");
+    logoutButton.addEventListener("click", function() {
+        const token = localStorage.getItem("token");
+
+        fetch("http://127.0.0.1:8000/api/logout", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            localStorage.removeItem("token");
+            alert("Logged out successfully");
+            window.location.href = "login.html";
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
+</body>
+</html>
